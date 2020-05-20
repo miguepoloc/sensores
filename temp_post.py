@@ -9,14 +9,9 @@ import busio
 import digitalio
 # Se importa la librería de adafruit para el controlador de la RTC
 import adafruit_max31865
+import requests
 
-import psycopg2
 from datetime import datetime
-
-conexion1 = psycopg2.connect(database="boya", user="admin", password="Contrasena1!")
-cursor1 = conexion1.cursor()
-sql = "insert into api_temperatura(temperatura, fecha, unidad, flag, latitud, longitud) values (%s,%s,%s,%s, %s,%s)"
-conexion1.commit()
 
 # Se asignan los pines encargados del protocolo SPI
 spi = busio.SPI(board.SCK, MOSI=board.MOSI, MISO=board.MISO)
@@ -26,6 +21,7 @@ cs = digitalio.DigitalInOut(board.D5)
 # Se llama a la librería MAX31865 asignandole los pines spi, cs
 # e indicandole que es una PT100 y de 3 cables
 sensor = adafruit_max31865.MAX31865(spi, cs, rtd_nominal=100.0, wires=3)
+
 
 # Se crea un bucle infinito
 while True:
@@ -37,12 +33,17 @@ while True:
     print('Temperatura: {0:0.3f} °C'.format(temp))
     # Se imprime el valor que está leyendo la resistencia
     print('Resistencia: {0:0.3f} Ohms'.format(sensor.resistance))
-    datos = (round(sensor.temperature, 3),
-             fecha[0], "°C", 4, "11.229602", "-74.163671")
     print(fecha[0])
-    cursor1.execute(sql, datos)
-    conexion1.commit()
-    # Se espera 1 segundo
-    time.sleep(2)
 
-conexion1.close()
+    params = {
+        "temperatura": round(sensor.temperature, 3),
+        # "temperatura": 19,
+        "fecha": "",
+        "unidad": "°C",
+        "flag": 4,
+        "latitud": "11.229602",
+        "longitud": "-74.163671"
+    }
+    r = requests.post('http://127.0.0.1:8000/api/temperatura/', data=params)
+    print(r.text)
+    time.sleep(10)
