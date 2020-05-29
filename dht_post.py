@@ -19,6 +19,15 @@ while True:
             "longitud": "-74.163671"
         }
         r = requests.post('http://192.168.0.14:8000/api/temperatura/', data=params)
+        params2 = {
+            "humedad": round(humidity, 3),
+            "fecha": "",
+            "unidad": "%",
+            "flag": 0,
+            "latitud": "11.229602",
+            "longitud": "-74.163671"
+        }
+        r2 = requests.post('http://192.168.0.14:8000/api/humedad/', data=params2)
         print("Temp={0:0.01f}°C  Humedad={1:0.1f}%".format(temperature, humidity))
     else:
         print("Failed to retrieve data from humidity sensor")
